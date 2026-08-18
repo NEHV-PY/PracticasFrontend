@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Ábaco Soroban</title>
+    <title>Ábaco Soroban Mamba</title>
     <style>
         * {
             box-sizing: border-box;
@@ -15,342 +15,280 @@
         }
 
         body {
-            background-color: #0d2861;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            overflow: hidden;
-            color: #ffffff;
-        }
-
-        /* Fuerza la pantalla horizontal si el dispositivo está vertical */
-        @media screen and (orientation: portrait) {
-            #app-container {
-                transform: rotate(90deg);
-                transform-origin: center center;
-                width: 100vh !important;
-                height: 100vw !important;
-            }
-        }
-
-        #app-container {
-            width: 100vw;
             height: 100vh;
-            background: linear-gradient(135deg, #0b1f4d 0%, #133a82 100%);
+            background-color: #2c3e50; /* Fondo gris/azulado oscuro para contraste */
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        .abacus-container {
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
             align-items: center;
-            padding: 10px 20px;
+            background-color: #1a252f; /* Fondo del marco un poco más oscuro */
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
             position: relative;
         }
 
-        /* Encabezado sin cuadro total */
-        header {
-            width: 100%;
+        .frame {
+            border: 8px solid #d35400; /* Borde naranja/madera */
+            padding: 10px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 5px 10px;
-        }
-
-        .btn-icon {
-            background: rgba(255, 255, 255, 0.15);
-            border: none;
-            color: white;
-            font-size: 20px;
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-
-        .btn-icon:active {
-            transform: scale(0.92);
-        }
-
-        /* Marco del Ábaco */
-        .abacus-frame {
-            background: #18418c;
-            border: 8px solid #2357b5;
-            border-radius: 12px;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.6), 0 8px 25px rgba(0,0,0,0.4);
-            padding: 10px 15px;
-            width: 96%;
-            max-width: 900px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            margin: 5px 0;
-        }
-
-        .columns-container {
-            display: flex;
-            justify-content: space-between;
-            height: 85%;
+            gap: 15px;
+            background-color: #34495e; /* Fondo interno del ábaco */
             position: relative;
+            border-radius: 5px;
         }
 
-        .abacus-column {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-            flex: 1;
-            height: 100%;
-        }
-
-        /* Varilla vertical */
-        .rod {
+        /* Varilla central (barra de valor) arreglada */
+        .separator-bar {
             position: absolute;
-            width: 5px;
-            height: 100%;
-            background: linear-gradient(to right, #7a94c4, #ffffff, #7a94c4);
-            z-index: 1;
-            border-radius: 2px;
-        }
-
-        /* Barra divisora horizontal */
-        .beam {
-            position: absolute;
-            top: 28%;
+            top: 25%;
+            left: 0;
             width: 100%;
             height: 10px;
-            background: linear-gradient(to bottom, #112d63, #2357b5, #112d63);
-            z-index: 3;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
-            border-radius: 2px;
+            background-color: #d35400; /* Mismo color del marco */
+            z-index: 1;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.4);
         }
 
-        /* Puntos de unidad en la barra */
-        .unit-dot {
-            position: absolute;
-            width: 6px;
-            height: 6px;
-            background-color: #ffffff;
-            border-radius: 50%;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 4;
-            box-shadow: 0 0 3px rgba(0,0,0,0.8);
-        }
-
-        /* Secciones superior e inferior */
-        .upper-deck, .lower-deck {
-            position: relative;
-            z-index: 2;
-            width: 100%;
+        .column {
             display: flex;
             flex-direction: column;
             align-items: center;
-        }
-
-        .upper-deck {
-            height: 28%;
-            justify-content: flex-start;
-        }
-
-        .lower-deck {
-            height: 68%;
-            justify-content: flex-end;
-        }
-
-        /* Cuentas (Beads - Bicono Soroban) */
-        .bead {
-            width: 82%;
-            max-width: 52px;
-            height: 22px;
-            cursor: pointer;
-            transition: transform 0.15s ease-out, background-color 0.2s ease, box-shadow 0.2s ease;
             position: relative;
-            clip-path: polygon(20% 0%, 80% 0%, 100% 50%, 80% 100%, 20% 100%, 0% 50%);
-            margin: 1px 0;
+            height: 250px;
+            width: 30px;
         }
 
-        /* Estado Inactivo (Azul) */
-        .bead.inactive {
-            background: linear-gradient(180deg, #4b7bd8 0%, #2b52a1 50%, #1e3c78 100%);
-            box-shadow: inset 0 2px 3px rgba(255,255,255,0.3), inset 0 -2px 3px rgba(0,0,0,0.4);
+        /* Varilla vertical (alambre) */
+        .column::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            background-color: #bdc3c7;
+            z-index: 0;
         }
 
-        /* Estado Activo (Amarillo) */
-        .bead.active {
-            background: linear-gradient(180deg, #ffea6b 0%, #f5b301 50%, #c48700 100%);
-            box-shadow: inset 0 2px 3px rgba(255,255,255,0.6), inset 0 -2px 3px rgba(0,0,0,0.4);
+        .bead {
+            width: 35px;
+            height: 20px;
+            background: linear-gradient(to bottom, #3498db, #2980b9); /* Azul contrastante */
+            border-radius: 10px;
+            position: absolute;
+            z-index: 2;
+            cursor: pointer;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.4), 0 2px 4px rgba(0,0,0,0.6);
+            transition: top 0.15s ease-out;
         }
 
-        /* Fila de números individuales por columna */
-        .column-values {
+        /* Cuentas del cielo (Valor 5) */
+        .bead.heaven {
+            top: 5px;
+        }
+        .bead.heaven.active {
+            top: 35px; /* Baja hacia la barra */
+        }
+
+        /* Cuentas de la tierra (Valor 1) */
+        .bead.earth-1 { top: 110px; }
+        .bead.earth-2 { top: 135px; }
+        .bead.earth-3 { top: 160px; }
+        .bead.earth-4 { top: 185px; }
+
+        .bead.earth-1.active { top: 75px; }
+        .bead.earth-2.active { top: 100px; }
+        .bead.earth-3.active { top: 125px; }
+        .bead.earth-4.active { top: 150px; }
+
+        /* Contenedor de números bien alineado */
+        .value-display-container {
             display: flex;
-            justify-content: space-between;
+            gap: 15px; /* Mismo gap que las columnas del frame */
+            margin-top: 10px;
+            padding: 0 10px; /* Mismo padding interno que el frame */
             width: 100%;
-            padding-top: 4px;
+            justify-content: space-between;
         }
 
-        .col-val {
-            flex: 1;
-            text-align: center;
-            font-size: 18px;
+        .column-value {
+            color: #f1c40f; /* Amarillo para resaltar */
+            font-size: 1.2rem;
             font-weight: bold;
-            color: #ffc83b;
+            width: 30px; /* Mismo ancho que la columna */
+            text-align: center;
         }
+        
+        /* Puntos guía (opcional, para unidades, miles, etc.) */
+        .guide-dot {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background-color: white;
+            border-radius: 50%;
+            top: 25%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 3;
+            margin-top: 5px;
+        }
+
+        /* Botón Reset */
+        .reset-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        .reset-btn:hover {
+            background-color: #c0392b;
+        }
+        .reset-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 3px rgba(0,0,0,0.3);
+        }
+
     </style>
 </head>
 <body>
 
-    <div id="app-container">
-        <header>
-            <button class="btn-icon" onclick="resetAbacus()" title="Reiniciar">↺</button>
-            <button class="btn-icon" onclick="toggleFullscreen()" title="Pantalla Completa">⛶</button>
-        </header>
-
-        <div class="abacus-frame">
-            <div class="beam"></div>
-            <div class="columns-container" id="columns-holder">
-                <!-- Las columnas se generan dinámicamente con JS -->
-            </div>
+    <div class="abacus-container">
+        <div class="frame" id="abacus-frame">
+            <div class="separator-bar"></div>
+            <!-- Las columnas se generarán con JS -->
         </div>
-
-        <div class="column-values" id="values-holder">
-            <!-- Valores numéricos inferiores -->
+        
+        <div class="value-display-container" id="value-display">
+            <!-- Los valores se generarán con JS -->
         </div>
     </div>
 
+    <button class="reset-btn" onclick="resetAbacus()">Resetear Ábaco</button>
+
     <script>
-        const NUM_COLUMNS = 9;
-        const columnsState = Array(NUM_COLUMNS).fill(0);
+        const numColumns = 13; // Ajustado a 13 columnas
+        const frame = document.getElementById('abacus-frame');
+        const valueDisplay = document.getElementById('value-display');
 
-        function initAbacus() {
-            const columnsHolder = document.getElementById('columns-holder');
-            const valuesHolder = document.getElementById('values-holder');
+        // Estado del ábaco
+        let abacusState = Array(numColumns).fill(0);
 
-            columnsHolder.innerHTML = '';
-            valuesHolder.innerHTML = '';
+        function createAbacus() {
+            for (let i = 0; i < numColumns; i++) {
+                // Crear columna visual
+                const colDiv = document.createElement('div');
+                colDiv.className = 'column';
+                colDiv.dataset.colIndex = i;
 
-            for (let i = 0; i < NUM_COLUMNS; i++) {
-                const col = document.createElement('div');
-                col.className = 'abacus-column';
-                col.dataset.colIndex = i;
-
-                const rod = document.createElement('div');
-                rod.className = 'rod';
-                col.appendChild(rod);
-
-                if (i === 2 || i === 4 || i === 6) {
+                // Puntos guía cada 3 columnas (comenzando desde la derecha)
+                if ((numColumns - 1 - i) % 3 === 0 && i !== numColumns -1) {
                     const dot = document.createElement('div');
-                    dot.className = 'unit-dot';
-                    col.appendChild(dot);
+                    dot.className = 'guide-dot';
+                    colDiv.appendChild(dot);
                 }
 
-                const upperDeck = document.createElement('div');
-                upperDeck.className = 'upper-deck';
-                
-                const upperBead = document.createElement('div');
-                upperBead.className = 'bead inactive';
-                upperBead.dataset.type = 'upper';
-                upperBead.onclick = () => toggleUpperBead(i, upperBead);
-                upperDeck.appendChild(upperBead);
+                // Cuenta del cielo (Valor 5)
+                const heavenBead = document.createElement('div');
+                heavenBead.className = 'bead heaven';
+                heavenBead.dataset.value = 5;
+                heavenBead.addEventListener('click', () => toggleHeaven(i, heavenBead));
+                colDiv.appendChild(heavenBead);
 
-                const lowerDeck = document.createElement('div');
-                lowerDeck.className = 'lower-deck';
-
-                for (let j = 0; j < 4; j++) {
-                    const lowerBead = document.createElement('div');
-                    lowerBead.className = 'bead inactive';
-                    lowerBead.dataset.type = 'lower';
-                    lowerBead.dataset.beadIndex = j;
-                    lowerBead.onclick = () => toggleLowerBead(i, j);
-                    lowerDeck.appendChild(lowerBead);
+                // Cuentas de la tierra (Valor 1)
+                for (let j = 1; j <= 4; j++) {
+                    const earthBead = document.createElement('div');
+                    earthBead.className = `bead earth-${j}`;
+                    earthBead.dataset.pos = j;
+                    earthBead.addEventListener('click', () => toggleEarth(i, j));
+                    colDiv.appendChild(earthBead);
                 }
 
-                col.appendChild(upperDeck);
-                col.appendChild(lowerDeck);
-                columnsHolder.appendChild(col);
+                frame.appendChild(colDiv);
 
-                const valLabel = document.createElement('div');
-                valLabel.className = 'col-val';
-                valLabel.id = `col-val-${i}`;
-                valLabel.innerText = '0';
-                valuesHolder.appendChild(valLabel);
+                // Crear número debajo de la columna
+                const valDiv = document.createElement('div');
+                valDiv.className = 'column-value';
+                valDiv.id = `val-${i}`;
+                valDiv.innerText = '0';
+                valueDisplay.appendChild(valDiv);
             }
         }
 
-        function toggleUpperBead(colIndex, beadEl) {
-            const isUpperActive = beadEl.classList.contains('active');
-            if (isUpperActive) {
+        function toggleHeaven(colIndex, beadEl) {
+            const isActive = beadEl.classList.contains('active');
+            if (isActive) {
                 beadEl.classList.remove('active');
-                beadEl.classList.add('inactive');
-                beadEl.style.transform = 'translateY(0px)';
+                abacusState[colIndex] -= 5;
             } else {
-                beadEl.classList.remove('inactive');
                 beadEl.classList.add('active');
-                beadEl.style.transform = 'translateY(18px)';
+                abacusState[colIndex] += 5;
             }
-            calculateColumnValue(colIndex);
+            updateDisplay(colIndex);
         }
 
-        function toggleLowerBead(colIndex, beadIndex) {
-            const col = document.querySelectorAll('.abacus-column')[colIndex];
-            const lowerBeads = col.querySelectorAll('.lower-deck .bead');
+        function toggleEarth(colIndex, posClicked) {
+            const colEl = frame.children[colIndex + 1]; // +1 por el separator-bar
+            
+            // Determinar cuántas cuentas de tierra están activas actualmente
+            let activeCount = 0;
+            for(let i=1; i<=4; i++){
+                if(colEl.querySelector(`.earth-${i}`).classList.contains('active')) activeCount++;
+            }
 
-            const targetBead = lowerBeads[beadIndex];
-            const isActive = targetBead.classList.contains('active');
-
-            if (!isActive) {
-                for (let k = 0; k <= beadIndex; k++) {
-                    lowerBeads[k].classList.remove('inactive');
-                    lowerBeads[k].classList.add('active');
-                    lowerBeads[k].style.transform = 'translateY(-18px)';
+            // Lógica de movimiento en bloque
+            if (posClicked > activeCount) {
+                // Activar todas hasta la clickeada
+                for (let i = activeCount + 1; i <= posClicked; i++) {
+                    colEl.querySelector(`.earth-${i}`).classList.add('active');
+                    abacusState[colIndex] += 1;
                 }
             } else {
-                for (let k = beadIndex; k < 4; k++) {
-                    lowerBeads[k].classList.remove('active');
-                    lowerBeads[k].classList.add('inactive');
-                    lowerBeads[k].style.transform = 'translateY(0px)';
+                // Desactivar todas desde la clickeada hacia abajo
+                for (let i = activeCount; i >= posClicked; i--) {
+                    colEl.querySelector(`.earth-${i}`).classList.remove('active');
+                    abacusState[colIndex] -= 1;
                 }
             }
-
-            calculateColumnValue(colIndex);
+            updateDisplay(colIndex);
         }
 
-        function calculateColumnValue(colIndex) {
-            const col = document.querySelectorAll('.abacus-column')[colIndex];
-            const upperBead = col.querySelector('.upper-deck .bead');
-            const lowerBeads = col.querySelectorAll('.lower-deck .bead');
-
-            let val = 0;
-            if (upperBead.classList.contains('active')) val += 5;
-
-            lowerBeads.forEach(bead => {
-                if (bead.classList.contains('active')) val += 1;
-            });
-
-            columnsState[colIndex] = val;
-            document.getElementById(`col-val-${colIndex}`).innerText = val;
+        function updateDisplay(colIndex) {
+            document.getElementById(`val-${colIndex}`).innerText = abacusState[colIndex];
         }
 
         function resetAbacus() {
-            initAbacus();
+            abacusState = Array(numColumns).fill(0);
+            
+            const columns = document.querySelectorAll('.column');
+            columns.forEach((col, colIndex) => {
+                // Reset visual cuentas
+                const beads = col.querySelectorAll('.bead');
+                beads.forEach(bead => bead.classList.remove('active'));
+                
+                // Reset texto
+                document.getElementById(`val-${colIndex}`).innerText = '0';
+            });
         }
 
-        function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(() => {});
-            } else {
-                if (document.exitFullscreen) document.exitFullscreen();
-            }
-        }
-
-        window.onload = initAbacus;
+        // Inicializar
+        createAbacus();
     </script>
 </body>
 </html>
