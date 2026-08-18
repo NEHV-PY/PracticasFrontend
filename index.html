@@ -1,272 +1,356 @@
 ﻿<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-select=none">
-  <title>Ábaco Soroban Táctil</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#d35400">
-  <style>
-    * {
-      box-sizing: border-box;
-      touch-action: none;
-      user-select: none;
-      -webkit-user-select: none;
-    }
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background-color: #1a252f;
-      color: #ecf0f1;
-      padding: 15px;
-      margin: 0;
-    }
-    .display {
-      font-size: 2rem;
-      margin-bottom: 15px;
-      font-weight: bold;
-      background-color: #2c3e50;
-      padding: 10px 25px;
-      border-radius: 8px;
-      border: 2px solid #d35400;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    }
-    .soroban-frame {
-      display: flex;
-      flex-direction: row;
-      background-color: #2c3e50;
-      padding: 10px 8px;
-      border: 10px solid #d35400;
-      border-radius: 8px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-      overflow-x: auto;
-      max-width: 100%;
-      min-height: 320px;
-    }
-    .rod {
-      position: relative;
-      width: 44px;
-      height: 300px;
-      min-width: 44px;
-      min-height: 300px;
-      background-color: #34495e;
-      border-left: 1px solid #1a252f;
-      border-right: 1px solid #1a252f;
-    }
-    .wire {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 4px;
-      background-color: #bdc3c7;
-      z-index: 1;
-    }
-    .beam {
-      position: absolute;
-      top: 70px;
-      width: 100%;
-      height: 12px;
-      background-color: #d35400;
-      z-index: 3;
-    }
-    .bead {
-      width: 38px;
-      height: 22px;
-      background: linear-gradient(180deg, #e67e22, #d35400);
-      border-radius: 11px;
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 4;
-      cursor: grab;
-      border: 1px solid #a04000;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
-    }
-    .bead:active {
-      cursor: grabbing;
-      background: linear-gradient(180deg, #f39c12, #e67e22);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Ábaco Soroban</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #0d2861;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            color: #ffffff;
+        }
+
+        /* Fuerza la pantalla horizontal si el dispositivo está vertical */
+        @media screen and (orientation: portrait) {
+            #app-container {
+                transform: rotate(90deg);
+                transform-origin: center center;
+                width: 100vh !important;
+                height: 100vw !important;
+            }
+        }
+
+        #app-container {
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #0b1f4d 0%, #133a82 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            position: relative;
+        }
+
+        /* Encabezado sin cuadro total */
+        header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 10px;
+        }
+
+        .btn-icon {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: white;
+            font-size: 20px;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .btn-icon:active {
+            transform: scale(0.92);
+        }
+
+        /* Marco del Ábaco */
+        .abacus-frame {
+            background: #18418c;
+            border: 8px solid #2357b5;
+            border-radius: 12px;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.6), 0 8px 25px rgba(0,0,0,0.4);
+            padding: 10px 15px;
+            width: 96%;
+            max-width: 900px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            margin: 5px 0;
+        }
+
+        .columns-container {
+            display: flex;
+            justify-content: space-between;
+            height: 85%;
+            position: relative;
+        }
+
+        .abacus-column {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            flex: 1;
+            height: 100%;
+        }
+
+        /* Varilla vertical */
+        .rod {
+            position: absolute;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to right, #7a94c4, #ffffff, #7a94c4);
+            z-index: 1;
+            border-radius: 2px;
+        }
+
+        /* Barra divisora horizontal */
+        .beam {
+            position: absolute;
+            top: 28%;
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(to bottom, #112d63, #2357b5, #112d63);
+            z-index: 3;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+            border-radius: 2px;
+        }
+
+        /* Puntos de unidad en la barra */
+        .unit-dot {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 4;
+            box-shadow: 0 0 3px rgba(0,0,0,0.8);
+        }
+
+        /* Secciones superior e inferior */
+        .upper-deck, .lower-deck {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .upper-deck {
+            height: 28%;
+            justify-content: flex-start;
+        }
+
+        .lower-deck {
+            height: 68%;
+            justify-content: flex-end;
+        }
+
+        /* Cuentas (Beads - Bicono Soroban) */
+        .bead {
+            width: 82%;
+            max-width: 52px;
+            height: 22px;
+            cursor: pointer;
+            transition: transform 0.15s ease-out, background-color 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+            clip-path: polygon(20% 0%, 80% 0%, 100% 50%, 80% 100%, 20% 100%, 0% 50%);
+            margin: 1px 0;
+        }
+
+        /* Estado Inactivo (Azul) */
+        .bead.inactive {
+            background: linear-gradient(180deg, #4b7bd8 0%, #2b52a1 50%, #1e3c78 100%);
+            box-shadow: inset 0 2px 3px rgba(255,255,255,0.3), inset 0 -2px 3px rgba(0,0,0,0.4);
+        }
+
+        /* Estado Activo (Amarillo) */
+        .bead.active {
+            background: linear-gradient(180deg, #ffea6b 0%, #f5b301 50%, #c48700 100%);
+            box-shadow: inset 0 2px 3px rgba(255,255,255,0.6), inset 0 -2px 3px rgba(0,0,0,0.4);
+        }
+
+        /* Fila de números individuales por columna */
+        .column-values {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding-top: 4px;
+        }
+
+        .col-val {
+            flex: 1;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffc83b;
+        }
+    </style>
 </head>
 <body>
 
-  <div class="display">Valor Total: <span id="total-value">0</span></div>
-  <div class="soroban-frame" id="soroban"></div>
+    <div id="app-container">
+        <header>
+            <button class="btn-icon" onclick="resetAbacus()" title="Reiniciar">↺</button>
+            <button class="btn-icon" onclick="toggleFullscreen()" title="Pantalla Completa">⛶</button>
+        </header>
 
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js').catch(() => {});
-    }
+        <div class="abacus-frame">
+            <div class="beam"></div>
+            <div class="columns-container" id="columns-holder">
+                <!-- Las columnas se generan dinámicamente con JS -->
+            </div>
+        </div>
 
-    function triggerHaptic() {
-      if ('vibrate' in navigator) {
-        navigator.vibrate(8);
-      }
-    }
+        <div class="column-values" id="values-holder">
+            <!-- Valores numéricos inferiores -->
+        </div>
+    </div>
 
-    const TOTAL_RODS = 13;
-    const BEAD_H = 22;
-    const BEAM_TOP = 70;
-    const BEAM_H = 12;
-    const ROD_H = 300;
+    <script>
+        const NUM_COLUMNS = 9;
+        const columnsState = Array(NUM_COLUMNS).fill(0);
 
-    const UPPER_MIN = 4;
-    const UPPER_MAX = BEAM_TOP - BEAD_H;
-    const LOWER_MIN = BEAM_TOP + BEAM_H;
-    const LOWER_MAX = ROD_H - BEAD_H - 4;
+        function initAbacus() {
+            const columnsHolder = document.getElementById('columns-holder');
+            const valuesHolder = document.getElementById('values-holder');
 
-    const state = [];
+            columnsHolder.innerHTML = '';
+            valuesHolder.innerHTML = '';
 
-    function init() {
-      const sorobanEl = document.getElementById('soroban');
-      sorobanEl.innerHTML = '';
+            for (let i = 0; i < NUM_COLUMNS; i++) {
+                const col = document.createElement('div');
+                col.className = 'abacus-column';
+                col.dataset.colIndex = i;
 
-      for (let r = 0; r < TOTAL_RODS; r++) {
-        const rodEl = document.createElement('div');
-        rodEl.className = 'rod';
-        rodEl.innerHTML = `<div class="wire"></div><div class="beam"></div>`;
+                const rod = document.createElement('div');
+                rod.className = 'rod';
+                col.appendChild(rod);
 
-        const upperY = UPPER_MIN;
-        const upperBead = createBeadEl(r, 'upper', 0, upperY);
-        rodEl.appendChild(upperBead);
+                if (i === 2 || i === 4 || i === 6) {
+                    const dot = document.createElement('div');
+                    dot.className = 'unit-dot';
+                    col.appendChild(dot);
+                }
 
-        const lowerBeads = [];
-        for (let i = 0; i < 4; i++) {
-          const y = LOWER_MAX - (3 - i) * BEAD_H;
-          const beadEl = createBeadEl(r, 'lower', i, y);
-          rodEl.appendChild(beadEl);
-          lowerBeads.push({ el: beadEl, y: y });
+                const upperDeck = document.createElement('div');
+                upperDeck.className = 'upper-deck';
+                
+                const upperBead = document.createElement('div');
+                upperBead.className = 'bead inactive';
+                upperBead.dataset.type = 'upper';
+                upperBead.onclick = () => toggleUpperBead(i, upperBead);
+                upperDeck.appendChild(upperBead);
+
+                const lowerDeck = document.createElement('div');
+                lowerDeck.className = 'lower-deck';
+
+                for (let j = 0; j < 4; j++) {
+                    const lowerBead = document.createElement('div');
+                    lowerBead.className = 'bead inactive';
+                    lowerBead.dataset.type = 'lower';
+                    lowerBead.dataset.beadIndex = j;
+                    lowerBead.onclick = () => toggleLowerBead(i, j);
+                    lowerDeck.appendChild(lowerBead);
+                }
+
+                col.appendChild(upperDeck);
+                col.appendChild(lowerDeck);
+                columnsHolder.appendChild(col);
+
+                const valLabel = document.createElement('div');
+                valLabel.className = 'col-val';
+                valLabel.id = `col-val-${i}`;
+                valLabel.innerText = '0';
+                valuesHolder.appendChild(valLabel);
+            }
         }
 
-        state.push({
-          upper: { el: upperBead, y: upperY },
-          lower: lowerBeads
-        });
-        sorobanEl.appendChild(rodEl);
-      }
-      updateTotal();
-    }
-
-    function createBeadEl(rodIdx, type, idx, initialY) {
-      const bead = document.createElement('div');
-      bead.className = 'bead';
-      bead.style.top = initialY + 'px';
-
-      let isDragging = false;
-      let startY = 0;
-      let initBeadY = 0;
-
-      bead.addEventListener('pointerdown', (e) => {
-        isDragging = true;
-        startY = e.clientY;
-        initBeadY = type === 'upper' ? state[rodIdx].upper.y : state[rodIdx].lower[idx].y;
-        bead.setPointerCapture(e.pointerId);
-      });
-
-      bead.addEventListener('pointermove', (e) => {
-        if (!isDragging) return;
-        const deltaY = e.clientY - startY;
-        let newY = initBeadY + deltaY;
-
-        if (type === 'upper') {
-          newY = Math.max(UPPER_MIN, Math.min(UPPER_MAX, newY));
-          state[rodIdx].upper.y = newY;
-          bead.style.top = newY + 'px';
-        } else {
-          newY = Math.max(LOWER_MIN, Math.min(LOWER_MAX, newY));
-          moveLowerBeadCascade(rodIdx, idx, newY);
+        function toggleUpperBead(colIndex, beadEl) {
+            const isUpperActive = beadEl.classList.contains('active');
+            if (isUpperActive) {
+                beadEl.classList.remove('active');
+                beadEl.classList.add('inactive');
+                beadEl.style.transform = 'translateY(0px)';
+            } else {
+                beadEl.classList.remove('inactive');
+                beadEl.classList.add('active');
+                beadEl.style.transform = 'translateY(18px)';
+            }
+            calculateColumnValue(colIndex);
         }
-        updateTotal();
-      });
 
-      const endDrag = (e) => {
-        if (!isDragging) return;
-        isDragging = false;
-        snapBeads(rodIdx, type, idx);
-        triggerHaptic();
-        updateTotal();
-      };
+        function toggleLowerBead(colIndex, beadIndex) {
+            const col = document.querySelectorAll('.abacus-column')[colIndex];
+            const lowerBeads = col.querySelectorAll('.lower-deck .bead');
 
-      bead.addEventListener('pointerup', endDrag);
-      bead.addEventListener('pointercancel', endDrag);
+            const targetBead = lowerBeads[beadIndex];
+            const isActive = targetBead.classList.contains('active');
 
-      return bead;
-    }
+            if (!isActive) {
+                for (let k = 0; k <= beadIndex; k++) {
+                    lowerBeads[k].classList.remove('inactive');
+                    lowerBeads[k].classList.add('active');
+                    lowerBeads[k].style.transform = 'translateY(-18px)';
+                }
+            } else {
+                for (let k = beadIndex; k < 4; k++) {
+                    lowerBeads[k].classList.remove('active');
+                    lowerBeads[k].classList.add('inactive');
+                    lowerBeads[k].style.transform = 'translateY(0px)';
+                }
+            }
 
-    function moveLowerBeadCascade(rodIdx, idx, targetY) {
-      const lower = state[rodIdx].lower;
-      lower[idx].y = targetY;
-      lower[idx].el.style.top = targetY + 'px';
-
-      for (let i = idx - 1; i >= 0; i--) {
-        const limitY = lower[i + 1].y - BEAD_H;
-        if (lower[i].y > limitY) {
-          lower[i].y = limitY;
-          lower[i].el.style.top = limitY + 'px';
+            calculateColumnValue(colIndex);
         }
-      }
 
-      for (let i = idx + 1; i < 4; i++) {
-        const limitY = lower[i - 1].y + BEAD_H;
-        if (lower[i].y < limitY) {
-          lower[i].y = limitY;
-          lower[i].el.style.top = limitY + 'px';
+        function calculateColumnValue(colIndex) {
+            const col = document.querySelectorAll('.abacus-column')[colIndex];
+            const upperBead = col.querySelector('.upper-deck .bead');
+            const lowerBeads = col.querySelectorAll('.lower-deck .bead');
+
+            let val = 0;
+            if (upperBead.classList.contains('active')) val += 5;
+
+            lowerBeads.forEach(bead => {
+                if (bead.classList.contains('active')) val += 1;
+            });
+
+            columnsState[colIndex] = val;
+            document.getElementById(`col-val-${colIndex}`).innerText = val;
         }
-      }
-    }
 
-    function snapBeads(rodIdx, type, idx) {
-      if (type === 'upper') {
-        const mid = (UPPER_MIN + UPPER_MAX) / 2;
-        const finalY = state[rodIdx].upper.y > mid ? UPPER_MAX : UPPER_MIN;
-        state[rodIdx].upper.y = finalY;
-        state[rodIdx].upper.el.style.top = finalY + 'px';
-      } else {
-        const currentY = state[rodIdx].lower[idx].y;
-        const activeY = LOWER_MIN + idx * BEAD_H;
-        const inactiveY = LOWER_MAX - (3 - idx) * BEAD_H;
-        const mid = (activeY + inactiveY) / 2;
-
-        const isActivating = currentY < mid;
-
-        if (isActivating) {
-          for (let i = 0; i <= idx; i++) {
-            const target = LOWER_MIN + i * BEAD_H;
-            state[rodIdx].lower[i].y = target;
-            state[rodIdx].lower[i].el.style.top = target + 'px';
-          }
-        } else {
-          for (let i = idx; i < 4; i++) {
-            const target = LOWER_MAX - (3 - i) * BEAD_H;
-            state[rodIdx].lower[i].y = target;
-            state[rodIdx].lower[i].el.style.top = target + 'px';
-          }
+        function resetAbacus() {
+            initAbacus();
         }
-      }
-    }
 
-    function updateTotal() {
-      let total = BigInt(0);
-      for (let r = 0; r < TOTAL_RODS; r++) {
-        const upperActive = state[r].upper.y > (UPPER_MIN + UPPER_MAX) / 2;
-        let lowerCount = 0;
-        for (let i = 0; i < 4; i++) {
-          if (state[r].lower[i].y < (LOWER_MIN + LOWER_MAX) / 2) {
-            lowerCount++;
-          }
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
         }
-        const rodValue = (upperActive ? 5 : 0) + lowerCount;
-        const power = BigInt(TOTAL_RODS - 1 - r);
-        total += BigInt(rodValue) * (BigInt(10) ** power);
-      }
-      document.getElementById('total-value').innerText = total.toLocaleString('es-ES');
-    }
 
-    init();
-  </script>
+        window.onload = initAbacus;
+    </script>
 </body>
 </html>
