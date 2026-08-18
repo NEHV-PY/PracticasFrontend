@@ -9,7 +9,7 @@
             box-sizing: border-box;
             user-select: none;
             -webkit-user-select: none;
-            touch-action: manipulation;
+            touch-action: none; /* Evita que el celular haga scroll al arrastrar las cuentas */
             margin: 0;
             padding: 0;
         }
@@ -81,25 +81,27 @@
         .bead {
             width: 35px;
             height: 20px;
-            background: linear-gradient(to bottom, #3498db, #2980b9); /* Azul en reposo */
+            background: linear-gradient(to bottom, #3498db, #2980b9);
             border-radius: 10px;
             position: absolute;
             z-index: 2;
-            cursor: pointer;
+            cursor: grab;
             box-shadow: inset 0 2px 4px rgba(255,255,255,0.4), 0 2px 4px rgba(0,0,0,0.6);
-            transition: top 0.15s ease-out, background 0.2s ease;
+            transition: top 0.1s ease-out, background 0.2s ease;
         }
 
-        /* Estado activo: Amarillo suave al tocar/contar */
+        .bead:active {
+            cursor: grabbing;
+        }
+
         .bead.active {
             background: linear-gradient(to bottom, #f1c40f, #f39c12);
         }
 
-        /* Cuentas del cielo */
+        /* Posiciones fijas reposo / activo */
         .bead.heaven { top: 5px; }
         .bead.heaven.active { top: 35px; }
 
-        /* Cuentas de la tierra */
         .bead.earth-1 { top: 110px; }
         .bead.earth-2 { top: 135px; }
         .bead.earth-3 { top: 160px; }
@@ -140,7 +142,6 @@
             margin-top: 5px;
         }
 
-        /* Botón circular de Reset con flecha curva */
         .reset-btn {
             margin-top: 20px;
             width: 50px;
@@ -156,6 +157,7 @@
             cursor: pointer;
             box-shadow: 0 4px 8px rgba(0,0,0,0.4);
             transition: transform 0.2s, background-color 0.2s;
+            touch-action: auto;
         }
 
         .reset-btn:hover {
@@ -178,7 +180,6 @@
         <div class="value-display-container" id="value-display"></div>
     </div>
 
-    <!-- Botón con icono de flecha antihoraria -->
     <button class="reset-btn" onclick="resetAbacus()" title="Resetear Ábaco">↺</button>
 
     <script>
@@ -194,7 +195,7 @@
                 colDiv.className = 'column';
                 colDiv.dataset.colIndex = i;
 
-                if ((numColumns - 1 - i) % 3 === 0 && i !== numColumns -1) {
+                if ((numColumns - 1 - i) % 3 === 0 && i !== numColumns - 1) {
                     const dot = document.createElement('div');
                     dot.className = 'guide-dot';
                     colDiv.appendChild(dot);
@@ -203,14 +204,14 @@
                 const heavenBead = document.createElement('div');
                 heavenBead.className = 'bead heaven';
                 heavenBead.dataset.value = 5;
-                heavenBead.addEventListener('click', () => toggleHeaven(i, heavenBead));
+                addDragEvents(heavenBead, () => toggleHeaven(i, heavenBead));
                 colDiv.appendChild(heavenBead);
 
                 for (let j = 1; j <= 4; j++) {
                     const earthBead = document.createElement('div');
                     earthBead.className = `bead earth-${j}`;
                     earthBead.dataset.pos = j;
-                    earthBead.addEventListener('click', () => toggleEarth(i, j));
+                    addDragEvents(earthBead, () => toggleEarth(i, j));
                     colDiv.appendChild(earthBead);
                 }
 
@@ -222,6 +223,41 @@
                 valDiv.innerText = '0';
                 valueDisplay.appendChild(valDiv);
             }
+        }
+
+        /* Lógica para permitir arrastre en pantalla táctil y mouse */
+        function addDragEvents(element, triggerCallback) {
+            let startY = 0;
+            let isDragging = false;
+
+            const onStart = (e) => {
+                startY = e.touches ? e.touches[0].clientY : e.clientY;
+                isDragging = true;
+            };
+
+            const onMove = (e) => {
+                if (!isDragging) return;
+                const currentY = e.touches ? e.touches[0].clientY : e.clientY;
+                const deltaY = currentY - startY;
+
+                // Si se desplaza más de 10px en vertical, activa la cuenta
+                if (Math.abs(deltaY) > 10) {
+                    isDragging = false;
+                    triggerCallback();
+                }
+            };
+
+            const onEnd = () => {
+                isDragging = false;
+            };
+
+            element.addEventListener('touchstart', onStart, { passive: true });
+            element.addEventListener('touchmove', onMove, { passive: true });
+            element.addEventListener('touchend', onEnd, { passive: true });
+
+            element.addEventListener('mousedown', onStart);
+            element.addEventListener('mousemove', onMove);
+            element.addEventListener('mouseup', onEnd);
         }
 
         function toggleHeaven(colIndex, beadEl) {
@@ -240,7 +276,7 @@
             const colEl = frame.children[colIndex + 1];
             
             let activeCount = 0;
-            for(let i=1; i<=4; i++){
+            for(let i = 1; i <= 4; i++){
                 if(colEl.querySelector(`.earth-${i}`).classList.contains('active')) activeCount++;
             }
 
