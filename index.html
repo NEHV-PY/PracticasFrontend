@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-select=none">
-  <title>Ábaco Soroban Táctil - 13 Varillas</title>
+  <title>Ábaco Soroban Táctil</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#d35400">
   <style>
     * {
       box-sizing: border-box;
@@ -96,6 +98,16 @@
   <div class="soroban-frame" id="soroban"></div>
 
   <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+
+    function triggerHaptic() {
+      if ('vibrate' in navigator) {
+        navigator.vibrate(8);
+      }
+    }
+
     const TOTAL_RODS = 13;
     const BEAD_H = 22;
     const BEAM_TOP = 70;
@@ -175,6 +187,7 @@
         if (!isDragging) return;
         isDragging = false;
         snapBeads(rodIdx, type, idx);
+        triggerHaptic();
         updateTotal();
       };
 

@@ -1,0 +1,17 @@
+﻿{
+  "short_name": "Soroban",
+  "name": "Ábaco Soroban Táctil",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3771/3771278.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#1a252f",
+  "theme_color": "#d35400",
+  "display": "standalone",
+  "orientation": "any"
+}
