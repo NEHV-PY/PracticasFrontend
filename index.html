@@ -20,7 +20,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #2c3e50; /* Fondo gris/azulado oscuro para contraste */
+            background-color: #2c3e50;
             font-family: Arial, sans-serif;
             overflow: hidden;
         }
@@ -29,7 +29,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: #1a252f; /* Fondo del marco un poco más oscuro */
+            background-color: #1a252f;
             padding: 15px;
             border-radius: 10px;
             box-shadow: 0 10px 20px rgba(0,0,0,0.5);
@@ -37,23 +37,22 @@
         }
 
         .frame {
-            border: 8px solid #d35400; /* Borde naranja/madera */
+            border: 8px solid #d35400;
             padding: 10px;
             display: flex;
             gap: 15px;
-            background-color: #34495e; /* Fondo interno del ábaco */
+            background-color: #34495e;
             position: relative;
             border-radius: 5px;
         }
 
-        /* Varilla central (barra de valor) arreglada */
         .separator-bar {
             position: absolute;
             top: 25%;
             left: 0;
             width: 100%;
             height: 10px;
-            background-color: #d35400; /* Mismo color del marco */
+            background-color: #d35400;
             z-index: 1;
             box-shadow: 0 2px 5px rgba(0,0,0,0.4);
         }
@@ -67,7 +66,6 @@
             width: 30px;
         }
 
-        /* Varilla vertical (alambre) */
         .column::before {
             content: '';
             position: absolute;
@@ -83,24 +81,25 @@
         .bead {
             width: 35px;
             height: 20px;
-            background: linear-gradient(to bottom, #3498db, #2980b9); /* Azul contrastante */
+            background: linear-gradient(to bottom, #3498db, #2980b9); /* Azul en reposo */
             border-radius: 10px;
             position: absolute;
             z-index: 2;
             cursor: pointer;
             box-shadow: inset 0 2px 4px rgba(255,255,255,0.4), 0 2px 4px rgba(0,0,0,0.6);
-            transition: top 0.15s ease-out;
+            transition: top 0.15s ease-out, background 0.2s ease;
         }
 
-        /* Cuentas del cielo (Valor 5) */
-        .bead.heaven {
-            top: 5px;
-        }
-        .bead.heaven.active {
-            top: 35px; /* Baja hacia la barra */
+        /* Estado activo: Amarillo suave al tocar/contar */
+        .bead.active {
+            background: linear-gradient(to bottom, #f1c40f, #f39c12);
         }
 
-        /* Cuentas de la tierra (Valor 1) */
+        /* Cuentas del cielo */
+        .bead.heaven { top: 5px; }
+        .bead.heaven.active { top: 35px; }
+
+        /* Cuentas de la tierra */
         .bead.earth-1 { top: 110px; }
         .bead.earth-2 { top: 135px; }
         .bead.earth-3 { top: 160px; }
@@ -111,25 +110,23 @@
         .bead.earth-3.active { top: 125px; }
         .bead.earth-4.active { top: 150px; }
 
-        /* Contenedor de números bien alineado */
         .value-display-container {
             display: flex;
-            gap: 15px; /* Mismo gap que las columnas del frame */
+            gap: 15px;
             margin-top: 10px;
-            padding: 0 10px; /* Mismo padding interno que el frame */
+            padding: 0 10px;
             width: 100%;
             justify-content: space-between;
         }
 
         .column-value {
-            color: #f1c40f; /* Amarillo para resaltar */
+            color: #f1c40f;
             font-size: 1.2rem;
             font-weight: bold;
-            width: 30px; /* Mismo ancho que la columna */
+            width: 30px;
             text-align: center;
         }
-        
-        /* Puntos guía (opcional, para unidades, miles, etc.) */
+
         .guide-dot {
             position: absolute;
             width: 4px;
@@ -143,28 +140,32 @@
             margin-top: 5px;
         }
 
-        /* Botón Reset */
+        /* Botón circular de Reset con flecha curva */
         .reset-btn {
             margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 1.1rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
             background-color: #e74c3c;
             color: white;
             border: none;
-            border-radius: 5px;
+            font-size: 1.8rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            font-weight: bold;
-            transition: background-color 0.2s;
-        }
-        .reset-btn:hover {
-            background-color: #c0392b;
-        }
-        .reset-btn:active {
-            transform: translateY(2px);
-            box-shadow: 0 2px 3px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+            transition: transform 0.2s, background-color 0.2s;
         }
 
+        .reset-btn:hover {
+            background-color: #c0392b;
+            transform: scale(1.08);
+        }
+
+        .reset-btn:active {
+            transform: scale(0.95) rotate(-45deg);
+        }
     </style>
 </head>
 <body>
@@ -172,46 +173,39 @@
     <div class="abacus-container">
         <div class="frame" id="abacus-frame">
             <div class="separator-bar"></div>
-            <!-- Las columnas se generarán con JS -->
         </div>
         
-        <div class="value-display-container" id="value-display">
-            <!-- Los valores se generarán con JS -->
-        </div>
+        <div class="value-display-container" id="value-display"></div>
     </div>
 
-    <button class="reset-btn" onclick="resetAbacus()">Resetear Ábaco</button>
+    <!-- Botón con icono de flecha antihoraria -->
+    <button class="reset-btn" onclick="resetAbacus()" title="Resetear Ábaco">↺</button>
 
     <script>
-        const numColumns = 13; // Ajustado a 13 columnas
+        const numColumns = 13;
         const frame = document.getElementById('abacus-frame');
         const valueDisplay = document.getElementById('value-display');
 
-        // Estado del ábaco
         let abacusState = Array(numColumns).fill(0);
 
         function createAbacus() {
             for (let i = 0; i < numColumns; i++) {
-                // Crear columna visual
                 const colDiv = document.createElement('div');
                 colDiv.className = 'column';
                 colDiv.dataset.colIndex = i;
 
-                // Puntos guía cada 3 columnas (comenzando desde la derecha)
                 if ((numColumns - 1 - i) % 3 === 0 && i !== numColumns -1) {
                     const dot = document.createElement('div');
                     dot.className = 'guide-dot';
                     colDiv.appendChild(dot);
                 }
 
-                // Cuenta del cielo (Valor 5)
                 const heavenBead = document.createElement('div');
                 heavenBead.className = 'bead heaven';
                 heavenBead.dataset.value = 5;
                 heavenBead.addEventListener('click', () => toggleHeaven(i, heavenBead));
                 colDiv.appendChild(heavenBead);
 
-                // Cuentas de la tierra (Valor 1)
                 for (let j = 1; j <= 4; j++) {
                     const earthBead = document.createElement('div');
                     earthBead.className = `bead earth-${j}`;
@@ -222,7 +216,6 @@
 
                 frame.appendChild(colDiv);
 
-                // Crear número debajo de la columna
                 const valDiv = document.createElement('div');
                 valDiv.className = 'column-value';
                 valDiv.id = `val-${i}`;
@@ -244,23 +237,19 @@
         }
 
         function toggleEarth(colIndex, posClicked) {
-            const colEl = frame.children[colIndex + 1]; // +1 por el separator-bar
+            const colEl = frame.children[colIndex + 1];
             
-            // Determinar cuántas cuentas de tierra están activas actualmente
             let activeCount = 0;
             for(let i=1; i<=4; i++){
                 if(colEl.querySelector(`.earth-${i}`).classList.contains('active')) activeCount++;
             }
 
-            // Lógica de movimiento en bloque
             if (posClicked > activeCount) {
-                // Activar todas hasta la clickeada
                 for (let i = activeCount + 1; i <= posClicked; i++) {
                     colEl.querySelector(`.earth-${i}`).classList.add('active');
                     abacusState[colIndex] += 1;
                 }
             } else {
-                // Desactivar todas desde la clickeada hacia abajo
                 for (let i = activeCount; i >= posClicked; i--) {
                     colEl.querySelector(`.earth-${i}`).classList.remove('active');
                     abacusState[colIndex] -= 1;
@@ -275,19 +264,14 @@
 
         function resetAbacus() {
             abacusState = Array(numColumns).fill(0);
-            
             const columns = document.querySelectorAll('.column');
             columns.forEach((col, colIndex) => {
-                // Reset visual cuentas
                 const beads = col.querySelectorAll('.bead');
                 beads.forEach(bead => bead.classList.remove('active'));
-                
-                // Reset texto
                 document.getElementById(`val-${colIndex}`).innerText = '0';
             });
         }
 
-        // Inicializar
         createAbacus();
     </script>
 </body>
